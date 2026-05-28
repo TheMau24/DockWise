@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["dockwise"]
+}
+
+enum UserRole {
+  ADMIN
+  DRIVER
+  OPERATOR
+
+  @@schema("dockwise")
+}
+
+enum VehicleType {
+  TRACTO
+  RIGIDO
+  CAMION_5T
+  FURGON
+
+  @@schema("dockwise")
+}
+
+enum TruckStatus {
+  DISPONIBLE
+  EN_VIAJE
+  EN_PATIO
+  BLOQUEADO
+  MANTENCION
+
+  @@schema("dockwise")
+}
+
+enum TripStatus {
+  CREADO
+  DISPONIBLE
+  ASIGNADO
+  EN_RUTA
+  EN_DESTINO
+  POSICIONADO_EN_ANDEN
+  EN_CARGA
+  EN_DESCARGA
+  DISPONIBLE_PARA_RETIRO
+  FINALIZADO
+  CANCELADO
+
+  @@schema("dockwise")
+}
+
+enum OperationType {
+  RETIRO
+  DESPACHO
+  CARGA
+  DESCARGA
+  MOVIMIENTO_INTERNO
+
+  @@schema("dockwise")
+}
+
+enum DockYardStatus {
+  VACIO
+  OCUPADO
+  RECURSO_POSICIONADO
+  EN_ESPERA
+  BLOQUEADO
+
+  @@schema("dockwise")
+}
+
+enum DockOperationalStatus {
+  HABILITADO
+  DESHABILITADO
+  EN_CARGA
+  EN_DESCARGA
+  DISPONIBLE_PARA_RETIRO
+  EN_MANTENIMIENTO
+  CERRADO_TEMPORALMENTE
+
+  @@schema("dockwise")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      UserRole
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver  Driver?
+  changes ChangeLog[]
+
+  @@schema("dockwise")
+}
+
+model TransportCompany {
+  id        String   @id @default(cuid())
+  name      String
+  rut       String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drivers Driver[]
+  trucks  Truck[]
+  trips   Trip[]
+
+  @@schema("dockwise")
+}
+
+model Driver {
+  id                 String   @id @default(cuid())
+  name               String
+  rut                String   @unique
+  phone              String?
+  active             Boolean  @default(true)
+  userId             String?  @unique
+  transportCompanyId String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user             User?            @relation(fields: [userId], references: [id])
+  transportCompany TransportCompany @relation(fields: [transportCompanyId], references: [id])
+  trips            Trip[]
+
+  @@schema("dockwise")
+}
+
+model Truck {
+  id                 String      @id @default(cuid())
+  plate              String      @unique
+  type               VehicleType
+  status             TruckStatus @default(DISPONIBLE)
+  qrCode             String      @unique
+  active             Boolean     @default(true)
+  transportCompanyId String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  transportCompany TransportCompany @relation(fields: [transportCompanyId], references: [id])
+  trips            Trip[]
+
+  @@schema("dockwise")
+}
+
+model Container {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips Trip[]
+
+  @@schema("dockwise")
+}
+
+model Origin {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips Trip[] @relation("TripOrigin")
+
+  @@schema("dockwise")
+}
+
+model Destination {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips Trip[] @relation("TripDestination")
+
+  @@schema("dockwise")
+}
+
+model Dock {
+  id                String                @id @default(cuid())
+  code              String                @unique
+  side              String?
+  yardStatus        DockYardStatus        @default(VACIO)
+  operationalStatus DockOperationalStatus @default(HABILITADO)
+  active            Boolean               @default(true)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  trips Trip[]
+
+  @@schema("dockwise")
+}
+
+model Trip {
+  id                 String        @id @default(cuid())
+  code               String        @unique
+  status             TripStatus    @default(CREADO)
+  operationType      OperationType
+  date               DateTime      @default(now())
+  transportCompanyId String
+  driverId           String?
+  truckId            String?
+  containerId        String?
+  originId           String
+  destinationId      String
+  dockId             String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  transportCompany TransportCompany @relation(fields: [transportCompanyId], references: [id])
+  driver           Driver?          @relation(fields: [driverId], references: [id])
+  truck            Truck?           @relation(fields: [truckId], references: [id])
+  container        Container?       @relation(fields: [containerId], references: [id])
+  origin           Origin           @relation("TripOrigin", fields: [originId], references: [id])
+  destination      Destination      @relation("TripDestination", fields: [destinationId], references: [id])
+  dock             Dock?            @relation(fields: [dockId], references: [id])
+
+  changes ChangeLog[]
+
+  @@schema("dockwise")
+}
+
+model ChangeLog {
+  id         String   @id @default(cuid())
+  entityName String
+  entityId   String
+  action     String
+  oldValue   Json?
+  newValue   Json?
+  userId     String?
+  tripId     String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+  trip Trip? @relation(fields: [tripId], references: [id])
+
+  @@schema("dockwise")
+}
