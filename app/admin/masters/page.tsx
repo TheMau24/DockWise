@@ -18,6 +18,19 @@ async function createTransportCompany(formData: FormData) {
     return;
   }
 
+  const existingCompany = await prisma.transportCompany.findFirst({
+    where: {
+      OR: [
+        { name },
+        ...(rut ? [{ rut }] : []),
+      ],
+    },
+  });
+
+  if (existingCompany) {
+    return;
+  }
+
   await prisma.transportCompany.create({
     data: {
       name,
@@ -60,6 +73,16 @@ async function createTruck(formData: FormData) {
 
   const qrCode = qrCodeInput || `QR-TRUCK-${plate.replaceAll(" ", "-")}`;
 
+  const existingTruck = await prisma.truck.findFirst({
+    where: {
+      OR: [{ plate }, { qrCode }],
+    },
+  });
+
+  if (existingTruck) {
+    return;
+  }
+
   await prisma.truck.create({
     data: {
       plate,
@@ -101,6 +124,14 @@ async function createDock(formData: FormData) {
   ) as DockOperationalStatus;
 
   if (!code || !yardStatus || !operationalStatus) {
+    return;
+  }
+
+  const existingDock = await prisma.dock.findUnique({
+    where: { code },
+  });
+
+  if (existingDock) {
     return;
   }
 
