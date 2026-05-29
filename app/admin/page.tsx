@@ -35,6 +35,15 @@ export default function AdminPage() {
               Próximo módulo: cargar datos desde Excel o CSV y descargar
               plantillas.
             </p>
+        <Link
+            href="/admin/masters/operations"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+            >
+            <h2 className="text-xl font-semibold">Bases operacionales</h2>
+            <p className="mt-2 text-sm text-slate-600">
+            Crear y mantener orígenes, destinos, contenedores y choferes.
+            </p>
+        </Link>
           </div>
         </section>
       </section>
