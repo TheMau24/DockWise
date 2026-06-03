@@ -23,27 +23,46 @@ export default function AdminPage() {
             href="/admin/masters"
             className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
           >
-            <h2 className="text-xl font-semibold">Bases maestras</h2>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Bases maestras
+            </h2>
             <p className="mt-2 text-sm text-slate-600">
               Crear y mantener empresas, camiones y andenes.
             </p>
           </Link>
 
+          <Link
+            href="/admin/masters/operations"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <h2 className="text-xl font-semibold text-slate-900">
+              Bases operacionales
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Crear y mantener orígenes, destinos, contenedores y choferes.
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/trips"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <h2 className="text-xl font-semibold text-slate-900">
+              Gestión de viajes
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Crear viajes, asignar recursos y actualizar estados operacionales.
+            </p>
+          </Link>
+
           <div className="rounded-2xl bg-white p-5 shadow opacity-70">
-            <h2 className="text-xl font-semibold">Carga masiva</h2>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Carga masiva
+            </h2>
             <p className="mt-2 text-sm text-slate-600">
               Próximo módulo: cargar datos desde Excel o CSV y descargar
               plantillas.
             </p>
-        <Link
-            href="/admin/masters/operations"
-            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
-            >
-            <h2 className="text-xl font-semibold">Bases operacionales</h2>
-            <p className="mt-2 text-sm text-slate-600">
-            Crear y mantener orígenes, destinos, contenedores y choferes.
-            </p>
-        </Link>
           </div>
         </section>
       </section>
