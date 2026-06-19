@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { docks, trips, trucks } from "@/lib/mock-data";
 import type { Dock, Trip, Truck } from "@/types/database";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function DriverPage() {
   const [scannedTruck, setScannedTruck] = useState<Truck | null>(null);
@@ -39,10 +40,15 @@ export default function DriverPage() {
           ← Volver al dashboard
         </Link>
 
-        <header className="rounded-2xl bg-slate-950 p-5 text-white shadow">
-          <p className="text-sm text-slate-300">Vista mobile</p>
-          <h1 className="text-2xl font-bold">Chofer</h1>
-          <p className="mt-2 text-sm text-slate-300">
+        <header className="flex flex-col gap-4 rounded-2xl bg-slate-950 p-5 text-white shadow">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm text-slate-300">Vista mobile</p>
+              <h1 className="text-2xl font-bold">Chofer</h1>
+            </div>
+            <LogoutButton />
+          </div>
+          <p className="text-sm text-slate-300">
             Escanea el camión, toma un viaje y selecciona andén al llegar.
           </p>
         </header>

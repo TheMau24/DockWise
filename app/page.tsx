@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
+import { LogoutButton } from "@/components/logout-button";
 
 export default async function HomePage() {
+  const sessionUser = await requireUser();
+
   const [users, companies, trucks, docks, trips, recentTrips] =
     await Promise.all([
       prisma.user.count(),
@@ -53,15 +57,23 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-100 p-4 md:p-6">
       <section className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-2xl bg-slate-950 p-6 text-white shadow">
-          <p className="text-sm uppercase tracking-wide text-slate-300">
-            Plataforma logística
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">DockWise</h1>
-          <p className="mt-2 max-w-3xl text-slate-300">
-            Control operativo de viajes, camiones, choferes, contenedores,
-            andenes y estado del patio.
-          </p>
+        <header className="flex flex-col gap-4 rounded-2xl bg-slate-950 p-6 text-white shadow md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-slate-300">
+              Plataforma logística
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">DockWise</h1>
+            <p className="mt-2 max-w-3xl text-slate-300">
+              Control operativo de viajes, camiones, choferes, contenedores,
+              andenes y estado del patio.
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            <p className="text-sm text-slate-300">
+              {sessionUser.name} · {sessionUser.role}
+            </p>
+            <LogoutButton />
+          </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-4">

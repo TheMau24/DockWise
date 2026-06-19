@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { docks as initialDocks, trips } from "@/lib/mock-data";
 import type { Dock, DockOperationalStatus } from "@/types/database";
+import { LogoutButton } from "@/components/logout-button";
 
 const operationalStatuses: DockOperationalStatus[] = [
   "Habilitado",
@@ -38,12 +39,15 @@ export default function OperatorPage() {
           ← Volver al dashboard
         </Link>
 
-        <header className="rounded-2xl bg-slate-950 p-5 text-white shadow">
-          <p className="text-sm text-slate-300">Vista operación</p>
-          <h1 className="text-2xl font-bold">Control de andenes</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Actualiza estados operacionales y revisa viajes asociados.
-          </p>
+        <header className="flex flex-col gap-4 rounded-2xl bg-slate-950 p-5 text-white shadow md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm text-slate-300">Vista operación</p>
+            <h1 className="text-2xl font-bold">Control de andenes</h1>
+            <p className="mt-2 text-sm text-slate-300">
+              Actualiza estados operacionales y revisa viajes asociados.
+            </p>
+          </div>
+          <LogoutButton />
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">

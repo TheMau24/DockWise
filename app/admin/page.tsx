@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function AdminPage() {
   return (
@@ -8,14 +9,17 @@ export default function AdminPage() {
           ← Volver al dashboard
         </Link>
 
-        <header className="rounded-2xl bg-slate-950 p-6 text-white shadow">
-          <p className="text-sm uppercase tracking-wide text-slate-300">
-            Administrador
-          </p>
-          <h1 className="mt-2 text-3xl font-bold">Panel administrador</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            Configuración general de DockWise.
-          </p>
+        <header className="flex flex-col gap-4 rounded-2xl bg-slate-950 p-6 text-white shadow md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-slate-300">
+              Administrador
+            </p>
+            <h1 className="mt-2 text-3xl font-bold">Panel administrador</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-300">
+              Configuración general de DockWise.
+            </p>
+          </div>
+          <LogoutButton />
         </header>
 
         <section className="grid gap-4 md:grid-cols-2">
@@ -52,6 +56,17 @@ export default function AdminPage() {
             </h2>
             <p className="mt-2 text-sm text-slate-600">
               Crear viajes, asignar recursos y actualizar estados operacionales.
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/users"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <h2 className="text-xl font-semibold text-slate-900">Usuarios</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Crear y administrar cuentas de administradores, operadores y
+              choferes con sus roles y estado.
             </p>
           </Link>
 
