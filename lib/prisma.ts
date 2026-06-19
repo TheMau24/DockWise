@@ -7,8 +7,12 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not defined");
 }
 
+// max: 1 evita que cada función serverless de Vercel abra múltiples conexiones
+// y agote el pooler de Supabase (EMAXCONNSESSION). Combinar con el Transaction
+// Pooler (puerto 6543) en producción.
 const adapter = new PrismaPg({
   connectionString,
+  max: 1,
 });
 
 const globalForPrisma = globalThis as unknown as {
