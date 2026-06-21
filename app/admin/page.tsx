@@ -60,6 +60,17 @@ export default function AdminPage() {
           </Link>
 
           <Link
+            href="/admin/mandantes"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <h2 className="text-xl font-semibold text-slate-900">Mandantes</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Clientes que subcontratan transportistas (Falabella, IKEA) y las
+              empresas que contrata cada uno.
+            </p>
+          </Link>
+
+          <Link
             href="/admin/users"
             className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
           >
@@ -70,15 +81,18 @@ export default function AdminPage() {
             </p>
           </Link>
 
-          <div className="rounded-2xl bg-white p-5 shadow opacity-70">
+          <Link
+            href="/admin/bulk"
+            className="rounded-2xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-lg"
+          >
             <h2 className="text-xl font-semibold text-slate-900">
               Carga masiva
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              Próximo módulo: cargar datos desde Excel o CSV y descargar
-              plantillas.
+              Importa empresas, camiones, andenes, contenedores, orígenes,
+              destinos y choferes desde CSV con plantillas descargables.
             </p>
-          </div>
+          </Link>
         </section>
       </section>
     </main>

@@ -105,10 +105,39 @@ model TransportCompany {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  drivers Driver[]
-  trucks  Truck[]
-  trips   Trip[]
+  drivers       Driver[]
+  trucks        Truck[]
+  trips         Trip[]
+  mandanteLinks MandanteCompany[]
 
+  @@schema("dockwise")
+}
+
+model Mandante {
+  id        String   @id @default(cuid())
+  name      String
+  rut       String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyLinks MandanteCompany[]
+  trips        Trip[]
+
+  @@schema("dockwise")
+}
+
+model MandanteCompany {
+  id                 String   @id @default(cuid())
+  mandanteId         String
+  transportCompanyId String
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  mandante         Mandante         @relation(fields: [mandanteId], references: [id], onDelete: Cascade)
+  transportCompany TransportCompany @relation(fields: [transportCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([mandanteId, transportCompanyId])
   @@schema("dockwise")
 }
 
@@ -205,6 +234,7 @@ model Trip {
   operationType      OperationType
   date               DateTime      @default(now())
   transportCompanyId String
+  mandanteId         String?
   driverId           String?
   truckId            String?
   containerId        String?
@@ -215,6 +245,7 @@ model Trip {
   updatedAt          DateTime      @updatedAt
 
   transportCompany TransportCompany @relation(fields: [transportCompanyId], references: [id])
+  mandante         Mandante?        @relation(fields: [mandanteId], references: [id])
   driver           Driver?          @relation(fields: [driverId], references: [id])
   truck            Truck?           @relation(fields: [truckId], references: [id])
   container        Container?       @relation(fields: [containerId], references: [id])

@@ -11,6 +11,7 @@ async function createTrip(formData: FormData) {
   const operationType = String(formData.get("operationType") || "") as OperationType;
   const dateValue = String(formData.get("date") || "");
   const transportCompanyId = String(formData.get("transportCompanyId") || "");
+  const mandanteId = String(formData.get("mandanteId") || "");
   const driverId = String(formData.get("driverId") || "");
   const truckId = String(formData.get("truckId") || "");
   const containerId = String(formData.get("containerId") || "");
@@ -37,6 +38,7 @@ async function createTrip(formData: FormData) {
       operationType,
       date: new Date(dateValue),
       transportCompanyId,
+      mandanteId: mandanteId || null,
       driverId: driverId || null,
       truckId: truckId || null,
       containerId: containerId || null,
@@ -69,6 +71,7 @@ export default async function AdminTripsPage() {
   const [
     trips,
     companies,
+    mandantes,
     drivers,
     trucks,
     containers,
@@ -79,6 +82,7 @@ export default async function AdminTripsPage() {
     prisma.trip.findMany({
       include: {
         transportCompany: true,
+        mandante: true,
         driver: true,
         truck: true,
         container: true,
@@ -89,6 +93,10 @@ export default async function AdminTripsPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.transportCompany.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.mandante.findMany({
       where: { active: true },
       orderBy: { name: "asc" },
     }),
@@ -215,6 +223,21 @@ export default async function AdminTripsPage() {
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
                       {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700">Mandante opcional</label>
+                <select
+                  name="mandanteId"
+                  className="mt-1 w-full rounded-xl border bg-white p-3 text-sm text-slate-900"
+                >
+                  <option value="">Sin mandante</option>
+                  {mandantes.map((mandante) => (
+                    <option key={mandante.id} value={mandante.id}>
+                      {mandante.name}
                     </option>
                   ))}
                 </select>
@@ -350,6 +373,9 @@ export default async function AdminTripsPage() {
                         </p>
                         <p className="text-slate-600">
                           Empresa: {trip.transportCompany.name}
+                        </p>
+                        <p className="text-slate-600">
+                          Mandante: {trip.mandante?.name || "Sin mandante"}
                         </p>
                         <p className="text-slate-600">
                           Chofer: {trip.driver?.name || "Sin chofer"}
