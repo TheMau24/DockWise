@@ -36,7 +36,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export function roleHome(role: UserRole): string {
   switch (role) {
     case "ADMIN":
-      return "/admin";
+      return "/";
     case "OPERATOR":
       return "/operator";
     case "DRIVER":

@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { requireUser, roleHome } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 
 export default async function HomePage() {
   const sessionUser = await requireUser();
+
+  // El dashboard general es solo para ADMIN. Operador y chofer van a su vista.
+  if (sessionUser.role !== "ADMIN") {
+    redirect(roleHome(sessionUser.role));
+  }
 
   const [users, companies, trucks, docks, trips, recentTrips] =
     await Promise.all([

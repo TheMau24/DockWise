@@ -9,6 +9,7 @@
     "postinstall": "prisma generate",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
+    "db:clean": "tsx prisma/clean-operational.ts",
     "auth:create-users": "tsx prisma/create-auth-users.ts"
   },
   "dependencies": {

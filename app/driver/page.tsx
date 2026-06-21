@@ -1,37 +1,76 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { docks, trips, trucks } from "@/lib/mock-data";
-import type { Dock, Trip, Truck } from "@/types/database";
+import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
+import DriverFlow from "./driver-flow";
 
-export default function DriverPage() {
-  const [scannedTruck, setScannedTruck] = useState<Truck | null>(null);
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [selectedDock, setSelectedDock] = useState<Dock | null>(null);
+const TAKEABLE_TRIP_STATUSES = ["CREADO", "DISPONIBLE", "ASIGNADO"] as const;
 
-  const availableTrips = scannedTruck
-    ? trips.filter(
-        (trip) =>
-          trip.companyId === scannedTruck.companyId &&
-          trip.vehicleTypeRequired === scannedTruck.type &&
-          ["Disponible", "Asignado", "Creado"].includes(trip.status)
-      )
-    : [];
+export default async function DriverPage() {
+  const sessionUser = await getSessionUser();
 
-  const availableDocks = docks.filter(
-    (dock) =>
-      dock.yardStatus === "Vacío" &&
-      dock.operationalStatus === "Habilitado"
-  );
+  const [trucks, trips, docks, driver] = await Promise.all([
+    prisma.truck.findMany({
+      where: { active: true },
+      orderBy: { plate: "asc" },
+      include: { transportCompany: true },
+    }),
+    prisma.trip.findMany({
+      where: {
+        status: { in: [...TAKEABLE_TRIP_STATUSES] },
+        truckId: null,
+      },
+      orderBy: { date: "asc" },
+      include: {
+        transportCompany: true,
+        origin: true,
+        destination: true,
+        container: true,
+      },
+    }),
+    prisma.dock.findMany({
+      where: {
+        active: true,
+        yardStatus: "VACIO",
+        operationalStatus: "HABILITADO",
+      },
+      orderBy: { code: "asc" },
+    }),
+    sessionUser
+      ? prisma.driver.findUnique({ where: { userId: sessionUser.id } })
+      : Promise.resolve(null),
+  ]);
 
-  function simulateQrScan(truckId: string) {
-    const truck = trucks.find((item) => item.id === truckId) ?? null;
-    setScannedTruck(truck);
-    setSelectedTrip(null);
-    setSelectedDock(null);
-  }
+  // Serializar a objetos planos para el client component.
+  const trucksData = trucks.map((t) => ({
+    id: t.id,
+    plate: t.plate,
+    type: t.type,
+    status: t.status,
+    transportCompanyId: t.transportCompanyId,
+    companyName: t.transportCompany.name,
+    qrCode: t.qrCode,
+  }));
+
+  const tripsData = trips.map((t) => ({
+    id: t.id,
+    code: t.code,
+    status: t.status,
+    operationType: t.operationType,
+    transportCompanyId: t.transportCompanyId,
+    companyName: t.transportCompany.name,
+    origin: t.origin.name,
+    destination: t.destination.name,
+    containerCode: t.container?.code ?? null,
+  }));
+
+  const docksData = docks.map((d) => ({
+    id: d.id,
+    code: d.code,
+    side: d.side,
+    yardStatus: d.yardStatus,
+    operationalStatus: d.operationalStatus,
+  }));
 
   return (
     <main className="min-h-screen bg-slate-100 p-4">
@@ -49,146 +88,17 @@ export default function DriverPage() {
             <LogoutButton />
           </div>
           <p className="text-sm text-slate-300">
-            Escanea el camión, toma un viaje y selecciona andén al llegar.
+            Escanea el camión, toma un viaje y selecciona andén al llegar. Los
+            cambios se guardan en la base real.
           </p>
         </header>
 
-        <section className="rounded-2xl bg-white p-5 shadow">
-          <h2 className="text-lg font-semibold">1. Simular escaneo QR camión</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Por ahora simulamos el QR con botones. Luego conectamos cámara real.
-          </p>
-
-          <div className="mt-4 grid gap-3">
-            {trucks.map((truck) => (
-              <button
-                key={truck.id}
-                onClick={() => simulateQrScan(truck.id)}
-                className="rounded-xl border p-4 text-left transition hover:bg-slate-50"
-              >
-                <p className="font-semibold">{truck.plate}</p>
-                <p className="text-sm text-slate-500">
-                  {truck.type} · {truck.status}
-                </p>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {scannedTruck && (
-          <section className="rounded-2xl bg-white p-5 shadow">
-            <h2 className="text-lg font-semibold">2. Camión escaneado</h2>
-            <div className="mt-3 rounded-xl bg-slate-50 p-4 text-sm">
-              <p>
-                <strong>Patente:</strong> {scannedTruck.plate}
-              </p>
-              <p>
-                <strong>Tipo:</strong> {scannedTruck.type}
-              </p>
-              <p>
-                <strong>Estado:</strong> {scannedTruck.status}
-              </p>
-              <p>
-                <strong>QR:</strong> {scannedTruck.qrCode}
-              </p>
-            </div>
-          </section>
-        )}
-
-        {scannedTruck && (
-          <section className="rounded-2xl bg-white p-5 shadow">
-            <h2 className="text-lg font-semibold">3. Viajes disponibles</h2>
-
-            {availableTrips.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">
-                No hay viajes disponibles para este tipo de vehículo.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                {availableTrips.map((trip) => (
-                  <button
-                    key={trip.id}
-                    onClick={() => setSelectedTrip(trip)}
-                    className="rounded-xl border p-4 text-left transition hover:bg-slate-50"
-                  >
-                    <p className="font-semibold">{trip.code}</p>
-                    <p className="text-sm text-slate-500">
-                      {trip.origin} → {trip.destination}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Estado: {trip.status}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {selectedTrip && (
-          <section className="rounded-2xl bg-white p-5 shadow">
-            <h2 className="text-lg font-semibold">4. Detalle del viaje</h2>
-
-            <div className="mt-3 rounded-xl bg-slate-50 p-4 text-sm">
-              <p>
-                <strong>Viaje:</strong> {selectedTrip.code}
-              </p>
-              <p>
-                <strong>Origen:</strong> {selectedTrip.origin}
-              </p>
-              <p>
-                <strong>Destino:</strong> {selectedTrip.destination}
-              </p>
-              <p>
-                <strong>Operación:</strong> {selectedTrip.operationType}
-              </p>
-              <p>
-                <strong>Estado actual:</strong> {selectedTrip.status}
-              </p>
-            </div>
-          </section>
-        )}
-
-        {selectedTrip && (
-          <section className="rounded-2xl bg-white p-5 shadow">
-            <h2 className="text-lg font-semibold">5. Seleccionar andén</h2>
-
-            {availableDocks.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">
-                No hay andenes disponibles en este momento.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                {availableDocks.map((dock) => (
-                  <button
-                    key={dock.id}
-                    onClick={() => setSelectedDock(dock)}
-                    className="rounded-xl border p-4 text-left transition hover:bg-slate-50"
-                  >
-                    <p className="font-semibold">{dock.code}</p>
-                    <p className="text-sm text-slate-500">
-                      Patio: {dock.yardStatus} · Operación:{" "}
-                      {dock.operationalStatus}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {selectedTrip && selectedDock && (
-          <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow">
-            <h2 className="text-lg font-semibold text-emerald-900">
-              Posicionamiento confirmado
-            </h2>
-            <p className="mt-2 text-sm text-emerald-800">
-              El viaje {selectedTrip.code} queda simulado como posicionado en{" "}
-              {selectedDock.code}. En el siguiente módulo esto actualizará la
-              base de datos real.
-            </p>
-          </section>
-        )}
+        <DriverFlow
+          trucks={trucksData}
+          trips={tripsData}
+          docks={docksData}
+          driverId={driver?.id ?? null}
+        />
       </section>
     </main>
   );
